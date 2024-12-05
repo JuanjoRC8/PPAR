@@ -17,3 +17,4 @@ print("Duraciones: " ,duraciones)
 print("Varianzas: " ,varianzas)
 
 
+
