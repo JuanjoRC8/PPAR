@@ -33,16 +33,30 @@ with open("mi_archivo.txt", "w") as archivo:
                        )
     
 #CREAR LAS ACTIVIDADES EN UNA VARIABLE
+# Inicializar el diccionario de actividades vacío
 actividades = {}
+
 for col in data.columns[1:]:
     fila_inicio = 6
     contenido_columna = data[col].iloc[fila_inicio-1:].tolist()
+
+    # Asegurarse de que 'col' tenga su propio diccionario en 'actividades'
+    if col not in actividades:
+        actividades[col] = {"duracion": 0, "depende_de": []}
+
+    # Buscar los valores 1 en la columna
     for i, valor in enumerate(contenido_columna):
         if valor == 1:
-            #Si la fila 7 siempre será igual a A:
-            fila_encontrada= fila_inicio + i+1;
-            actividades[col] = {"duracion": duraciones[col], "depende_de": [numero_a_letra(fila_encontrada,fila_inicio)]}
-            print(f"Se encontró un valor '1' en la columna '{col}' en la fila {fila_inicio + i + 1}.")
+            # Si la fila 7 siempre será igual a A
+            fila_encontrada = fila_inicio + i + 1
+
+            # Asignar la duración y agregar la dependencia a 'depende_de'
+            actividades[col]['duracion'] = duraciones[col]  # Asigna la duración
+            actividades[col]['depende_de'].append(numero_a_letra(fila_encontrada, fila_inicio))  # Agrega la dependencia
+
+# Imprimir el diccionario de actividades
+print(actividades)
+
         
 
 
