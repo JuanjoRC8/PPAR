@@ -1,7 +1,7 @@
 import pandas as pd
 from pulp import LpMinimize, LpProblem, LpVariable, lpSum
 
-from funciones_auxiliares import numero_a_letra
+from funciones_auxiliares import letra_a_numero, numero_a_letra
 
 # Leer el archivo Excel
 file_path = "input.xlsx"
@@ -21,7 +21,7 @@ for col in data.columns[1:]:
 #print("Varianzas: " ,varianzas)
 
 # Crear un fichero y escribir contenido en él
-with open("mi_archivo.txt", "w") as archivo:
+with open("archivo.txt", "w") as archivo:
     archivo.writelines("\\begin{table}[] \n"
                        "\\begin{tabular}{llllll} \n"
                        "Tarea & $t_o$ & $t_m$ & $t_p$ & $D_e$ & $\\sigma^{2}$ \\\\ \n"
@@ -30,6 +30,7 @@ with open("mi_archivo.txt", "w") as archivo:
         archivo.write(f"{tarea} & {data[tarea].iloc[0]} & {data[tarea].iloc[1]} & {data[tarea].iloc[2]} & {duraciones[tarea]} & {varianzas[tarea]} \\\\ \n")
     archivo.writelines("\\end{tabular} \n"
                        "\\end{table} \n"
+                       "\n\n\n\n"
                        )
     
 #CREAR LAS ACTIVIDADES EN UNA VARIABLE
@@ -64,13 +65,23 @@ for actividad in actividades:
         actividades[actividad]["early"] = max(
             actividades[dep]["early"] for dep in depende_de
         ) + actividades[actividad]["duracion"]
+        with open("archivo.txt", "a") as archivo:
+            archivo.write("$E_{} =  Max \\{{".format(actividad))
+            for dep in depende_de:
+                archivo.write("E_{} + {}".format(dep,actividad))
+                if dep != depende_de[-1]:
+                    archivo.write(", ")
+            archivo.write("\\}} = {}$\n".format(actividades[actividad]["early"]))
     else:  # Si no tiene dependencias
         actividades[actividad]["early"] = actividades[actividad]["duracion"]
-    #TODO  ESCRIBIR EN EL ARCHIVO LA FORMULA DEL EARLY
-
+        # Abre el archivo en modo 'append'
+        aux_duracion=actividades[actividad]["early"]
+        with open("archivo.txt", "a") as archivo:
+            archivo.write("$E_{} = {}$\n".format(actividad,aux_duracion))
 
 
 # Paso 2: Calcular 'late' (hacia atrás)
+
 # Encuentra la duración total del proyecto
 proyecto_duracion = max(actividad["early"] for actividad in actividades.values())
 
@@ -78,6 +89,9 @@ proyecto_duracion = max(actividad["early"] for actividad in actividades.values()
 for actividad in actividades:
     if not any(actividad in actividades[a]["depende_de"] for a in actividades):
         actividades[actividad]["late"] = proyecto_duracion
+        aux_duracion=actividades[actividad]["late"]
+        with open("archivo.txt", "a") as archivo:
+            archivo.write("$L_{} = E_{} = {}$\n".format(actividad,actividad,aux_duracion))
 
 # Calcula hacia atrás los valores de 'late'
 for actividad in sorted(actividades.keys(), reverse=True):
@@ -86,15 +100,23 @@ for actividad in sorted(actividades.keys(), reverse=True):
             actividades[dep]["late"] - actividades[dep]["duracion"]
             for dep in actividades
             if actividad in actividades[dep]["depende_de"]
+            #TODO ESCRIBIR EN EL ARCHIVO LA FORMULA DEL LATE
         )
-    #TODO ESCRIBIR EN EL ARCHIVO LA FORMULA DEL LATE
+        
+
+
+#TODO ESCRIBIR AQUI LA TABLA DE EARLYS Y LATES
 
 # Paso 3: Calcular la holgura
-for actividad in actividades:
+for actividad in sorted(actividades.keys()):
     holgura=actividades[actividad]["late"] - actividades[actividad]["early"]
     #TODO ESCRIBIR EN EL ARCHIVO LA FORMULA DE LA HOLGURA
     actividades[actividad]["holgura"] =0 if holgura<1e-3 else  holgura
 
+#TODO ESCRIBIR AQUI LA TABLA CON LAS RUTAS 
+
 # Imprimir las actividades con los valores 'early', 'late' y 'holgura'
 for actividad, valores in actividades.items():
     print(f"{actividad}: {valores}")
+
+#TODO CALCULAR CAMINOS CRITICOS Y DURACIÓN DEL MENOR CAMINO CRITICO
