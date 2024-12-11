@@ -97,19 +97,21 @@ for actividad in actividades:
 for actividad in sorted(actividades.keys(), reverse=True):
     if "late" not in actividades[actividad]:
         actividades[actividad]["late"] = min(
-            actividades[dep]["late"] - actividades[dep]["duracion"]
+            actividades[dep]["late"] - actividades[actividad]["duracion"]
             for dep in actividades
             if actividad in actividades[dep]["depende_de"]
-            #TODO EL LATE NO SE ESTÁ CALCULANDO BIEN
+            #TODO revisar que el late esta bien calculado
         )
         with open("archivo.txt", "a") as archivo:
                 archivo.write("$L_{} = Min \\{{".format(actividad))
         for dep in actividades:
             if actividad in actividades[dep]["depende_de"]:
+                aux_dependencias=actividades[dep]["depende_de"]
                 with open("archivo.txt", "a") as archivo:
                     archivo.write("L_{} - {}".format(dep,actividad))
-                    if dep != depende_de[-1]: #TODO REVISAR QUE PONGA BIEN EL ULTIMO ELEMENTO
-                        archivo.write(", ")
+                    if actividad in aux_dependencias[-1]:
+                            #TODO no pone bien la coma
+                            archivo.write(", ")
         with open("archivo.txt", "a") as archivo:
             archivo.write("\\}} = {}\n".format(actividades[actividad]["late"]))
 
@@ -125,7 +127,12 @@ for actividad in sorted(actividades.keys()):
 #TODO ESCRIBIR AQUI LA TABLA CON LAS RUTAS 
 
 # Imprimir las actividades con los valores 'early', 'late' y 'holgura'
+with open("archivo.txt", "a") as archivo:
+    archivo.write("\n\n\n\nRESULT DEBUGGING\n")
+
 for actividad, valores in actividades.items():
-    print(f"{actividad}: {valores}")
+    with open("archivo.txt", "a") as archivo:
+        archivo.write(f"{actividad}: {valores}\n")
+   
 
 #TODO CALCULAR CAMINOS CRITICOS Y DURACIÓN DEL MENOR CAMINO CRITICO
