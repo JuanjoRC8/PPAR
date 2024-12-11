@@ -22,14 +22,14 @@ for col in data.columns[1:]:
 
 # Crear un fichero y escribir contenido en él
 with open("archivo.txt", "w") as archivo:
-    archivo.writelines("\\begin{table}[] \n"
-                       "\\begin{tabular}{llllll} \n"
-                       "Tarea & $t_o$ & $t_m$ & $t_p$ & $D_e$ & $\\sigma^{2}$ \\\\ \n"
+    archivo.writelines("\\begin{table}[]\n"
+                       "\\begin{tabular}{llllll}\n"
+                       "Tarea & $t_o$ & $t_m$ & $t_p$ & $D_e$ & $\\sigma^{2}$ \\\\\n"
                        )
     for tarea in duraciones:
-        archivo.write(f"{tarea} & {data[tarea].iloc[0]} & {data[tarea].iloc[1]} & {data[tarea].iloc[2]} & {duraciones[tarea]} & {varianzas[tarea]} \\\\ \n")
-    archivo.writelines("\\end{tabular} \n"
-                       "\\end{table} \n"
+        archivo.write(f"{tarea} & {data[tarea].iloc[0]} & {data[tarea].iloc[1]} & {data[tarea].iloc[2]} & {duraciones[tarea]} & {varianzas[tarea]} \\\\\n")
+    archivo.writelines("\\end{tabular}\n"
+                       "\\end{table}\n"
                        "\n\n\n\n"
                        )
     
@@ -100,9 +100,18 @@ for actividad in sorted(actividades.keys(), reverse=True):
             actividades[dep]["late"] - actividades[dep]["duracion"]
             for dep in actividades
             if actividad in actividades[dep]["depende_de"]
-            #TODO ESCRIBIR EN EL ARCHIVO LA FORMULA DEL LATE
+            #TODO EL LATE NO SE ESTÁ CALCULANDO BIEN
         )
-        
+        with open("archivo.txt", "a") as archivo:
+                archivo.write("$L_{} = Min \\{{".format(actividad))
+        for dep in actividades:
+            if actividad in actividades[dep]["depende_de"]:
+                with open("archivo.txt", "a") as archivo:
+                    archivo.write("L_{} - {}".format(dep,actividad))
+                    if dep != depende_de[-1]: #TODO REVISAR QUE PONGA BIEN EL ULTIMO ELEMENTO
+                        archivo.write(", ")
+        with open("archivo.txt", "a") as archivo:
+            archivo.write("\\}} = {}\n".format(actividades[actividad]["late"]))
 
 
 #TODO ESCRIBIR AQUI LA TABLA DE EARLYS Y LATES
