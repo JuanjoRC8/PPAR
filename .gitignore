@@ -1,0 +1,9 @@
+# Ignorar directorios de caché de Python
+__pycache__/
+
+# Opcional: Ignorar archivos de caché específicos
+*.py[cod]
+
+# Ignorar entornos virtuales (opcional, si usas uno)
+venv/
+.env/
