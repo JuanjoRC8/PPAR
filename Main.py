@@ -53,4 +53,31 @@ for col in data.columns[1:]:
 
 # Generar las aristas del grafo
 aristas=generar_aristas(actividades)
-print(aristas)
+#Busco cuantos nodos creo
+nNodos=0
+auxMax=0
+for tupla in aristas:
+    for arista in aristas[tupla]["tupla"]:
+        if arista>auxMax:
+            auxMax=arista
+nNodos=auxMax+1 #Porque empiezo en el nodo 0
+nodos = list(range(0, nNodos))
+
+# Crear un grafo dirigido y asignar las aristas
+G = nx.DiGraph()
+G.add_nodes_from(nodos)
+for i in range(len(aristas)):
+    G.add_edge(aristas[i]["tupla"][0], aristas[i]["tupla"][1],actividad=aristas[i]["actividad"])
+
+# Dibujar el grafo
+pos = nx.spring_layout(G)  # Posición de los nodos
+nx.draw(G, pos, with_labels=True, node_color='lightblue', node_size=500, font_size=10, font_weight='bold')
+
+# Añadir etiquetas a las aristas
+edge_labels = nx.get_edge_attributes(G, 'actividad')
+nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels)
+
+# Mostrar el grafo
+plt.title("Grafo de Actividades")
+plt.savefig("grafo_actividades.png")
+plt.show()
