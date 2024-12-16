@@ -116,8 +116,11 @@ for nodo in nodos:
                             
             archivo.write(f"\\}} = {early_times[nodo]}$\n")
     
-            
+#TODO LAST
 
-print("Early Times:")
-for  nodo,tiempo in enumerate(early_times):
-    print(f"Nodo {nodo}: {tiempo}")
+#TODO HOLGURAS
+
+#TODO TABLA GENERAL
+
+#TODO CAMINO CRÍTICO
+
