@@ -1,8 +1,11 @@
+import re
+
 import matplotlib.pyplot as plt
 import networkx as nx
 import pandas as pd
 
-from funciones_auxiliares import generar_aristas, numero_a_letra
+from funciones_auxiliares import (generar_aristas, letra_a_numero,
+                                  numero_a_letra)
 
 # Leer el archivo Excel
 file_path = "input.xlsx"
@@ -67,8 +70,10 @@ nodos = list(range(0, nNodos))
 G = nx.DiGraph()
 G.add_nodes_from(nodos)
 for i in range(len(aristas)):
-    G.add_edge(aristas[i]["tupla"][0], aristas[i]["tupla"][1],actividad=aristas[i]["actividad"])
-
+    if aristas[i]["actividad"] in duraciones.keys():
+        G.add_edge(aristas[i]["tupla"][0], aristas[i]["tupla"][1],actividad=aristas[i]["actividad"])
+    else:
+        G.add_edge(aristas[i]["tupla"][0], aristas[i]["tupla"][1],actividad=aristas[i]["actividad"])
 # Dibujar el grafo
 pos = nx.spring_layout(G)  # Posición de los nodos
 nx.draw(G, pos, with_labels=True, node_color='lightblue', node_size=500, font_size=10, font_weight='bold')
@@ -80,4 +85,29 @@ nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels)
 # Mostrar el grafo
 plt.title("Grafo de Actividades")
 plt.savefig("grafo_actividades.png")
-plt.show()
+
+print(duraciones)
+
+# Calcular Early Times (Tiempos más tempranos) manualmente
+early_times = {0: 0}  # Empieza en el nodo inicial con tiempo temprano cero
+for nodo in nodos:
+    if nodo not in early_times:
+        continue
+    tiempo_anteriores = early_times[nodo]
+    for sucesor in G.successors(nodo):
+        if sucesor not in early_times or early_times[sucesor] > tiempo_anteriores + duraciones[aristas[nodo]["actividad"]]:
+            print(nodo)
+            print(aristas[nodo]["actividad"])
+            print (sucesor)
+            print(aristas[sucesor]["actividad"])
+            
+            print ("-------IT")
+            if re.match(r'^F\d+',aristas[nodo]["actividad"]):
+                aux_dur=early_times[nodo]
+            else:
+                aux_dur=duraciones[aristas[nodo]["actividad"]]
+            early_times[sucesor] = tiempo_anteriores + aux_dur
+
+print("Early Times:")
+for nodo, tiempo in early_times.items():
+    print(f"Nodo {nodo}: {tiempo}")
