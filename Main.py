@@ -89,7 +89,7 @@ plt.savefig("grafo_actividades.png")
 print(duraciones)
 
 # Calcular Early Times (Tiempos más tempranos) manualmente
-early_times = [0]*nNodos  # Empieza en el nodo inicial con tiempo temprano cero
+early_times = [-1]*nNodos  # Empieza en el nodo inicial con tiempo temprano cero
 for nodo in nodos:
     if nodo ==0:
         early_times[nodo] = 0
@@ -107,18 +107,48 @@ for nodo in nodos:
                         archivo.write(", ")
                     if re.match(r'^F\d+', valor["actividad"]):
                         auxVal= 0+early_times[valor["tupla"][0]]
-                        if early_times[nodo] == 0 or early_times[nodo] < auxVal:
+                        if early_times[nodo] == -1 or early_times[nodo] < auxVal:
                             early_times[nodo] = auxVal
                     else:
                         auxVal=duraciones[valor["actividad"]]+early_times[valor["tupla"][0]]
-                        if early_times[nodo] == 0 or early_times[nodo] < auxVal:
+                        if early_times[nodo] == -1 or early_times[nodo] < auxVal:
                             early_times[nodo] = auxVal
                             
             archivo.write(f"\\}} = {early_times[nodo]}$\n")
     
 #TODO LAST
+last_times= [-1]*nNodos
+for nodo in reversed(nodos):
+    if nodo == nNodos-1:
+        last_times[nodo] = early_times[nodo]
+        with open("archivo.txt", "a") as archivo:
+            archivo.write(f"$L_{nodo} = E_{nodo} = {early_times[nodo]}$\n")
+    else:
+        with open("archivo.txt", "a") as archivo:
+            archivo.write(f"$L_{nodo} = Min \\{{")
+            contador =sum(1 for arista, valor in aristas.items() if valor["tupla"][0] == nodo)
+            for arista,valor in aristas.items():
+                if valor["tupla"][0] == nodo:
+                    archivo.write(f"L_{valor["tupla"][1]} - {valor["actividad"]}")
+                    contador=contador-1
+                    if contador > 0:
+                        archivo.write(", ")
+                    if re.match(r'^F\d+', valor["actividad"]):
+                        auxVal= last_times[valor["tupla"][1]]
+                        if last_times[nodo] == -1 or last_times[nodo] > auxVal:
+                            last_times[nodo] = auxVal
+                    else:
+                        auxVal=last_times[valor["tupla"][1]] - duraciones[valor["actividad"]]
+                        if last_times[nodo] == -1 or last_times[nodo] > auxVal:
+                            print(last_times[nodo])
+                            print(auxVal)
+                            print("--------")
+                            last_times[nodo] = auxVal
+                            
+            archivo.write(f"\\}} = {last_times[nodo]}$\n")
 
 #TODO HOLGURAS
+holguras = [-1]*nNodos
 
 #TODO TABLA GENERAL
 
