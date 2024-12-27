@@ -86,7 +86,6 @@ nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels)
 plt.title("Grafo de Actividades")
 plt.savefig("grafo_actividades.png")
 
-print(duraciones)
 
 # Calcular Early Times (Tiempos más tempranos) manualmente
 early_times = [-1]*nNodos  # Empieza en el nodo inicial con tiempo temprano cero
@@ -140,9 +139,6 @@ for nodo in reversed(nodos):
                     else:
                         auxVal=last_times[valor["tupla"][1]] - duraciones[valor["actividad"]]
                         if last_times[nodo] == -1 or last_times[nodo] > auxVal:
-                            print(last_times[nodo])
-                            print(auxVal)
-                            print("--------")
                             last_times[nodo] = auxVal
                             
             archivo.write(f"\\}} = {last_times[nodo]}$\n")
