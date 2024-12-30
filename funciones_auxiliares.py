@@ -102,3 +102,6 @@ def generar_aristas(df):
                 aux3+=1
         n += 1
     return aristas
+
+def redondear(valor):
+    return round(valor, 3)
