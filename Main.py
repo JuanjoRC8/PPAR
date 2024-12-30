@@ -21,7 +21,7 @@ for col in data.columns[1:]:
     varianzas[col] = (int(data[col].iloc[2]) - int(data[col].iloc[0]))**2 / 36
 
 # Crear un fichero y escribir tiempos en el
-with open("archivo.txt", "w") as archivo:
+with open("archivo.tex", "w",encoding="utf-8") as archivo:
     archivo.writelines("\\begin{table}[]\n"
                        "\\begin{tabular}{llllll}\n"
                        "Tarea & $t_o$ & $t_m$ & $t_p$ & $D_e$ & $\\sigma^{2}$ \\\\\n"
@@ -86,16 +86,16 @@ nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels)
 plt.title("Grafo de Actividades")
 plt.savefig("grafo_actividades.png")
 
-
+    
 # Calcular Early Times (Tiempos más tempranos) manualmente
 early_times = [-1]*nNodos  # Empieza en el nodo inicial con tiempo temprano cero
 for nodo in nodos:
     if nodo ==0:
         early_times[nodo] = 0
-        with open("archivo.txt", "a") as archivo:
+        with open("archivo.tex", "a",encoding="utf-8") as archivo:
             archivo.write(f"$E_{nodo} = {0}$\n")
     else:
-        with open("archivo.txt", "a") as archivo:
+        with open("archivo.tex", "a",encoding="utf-8") as archivo:
             archivo.write(f"$E_{nodo} = Max \\{{")
             contador =sum(1 for arista, valor in aristas.items() if valor["tupla"][1] == nodo)
             for arista,valor in aristas.items():
@@ -115,15 +115,15 @@ for nodo in nodos:
                             
             archivo.write(f"\\}} = {early_times[nodo]}$\n")
     
-#TODO LAST
+#Calculos de los last times (Tiempos mas tardios)
 last_times= [-1]*nNodos
 for nodo in reversed(nodos):
     if nodo == nNodos-1:
         last_times[nodo] = early_times[nodo]
-        with open("archivo.txt", "a") as archivo:
+        with open("archivo.tex", "a",encoding="utf-8") as archivo:
             archivo.write(f"$L_{nodo} = E_{nodo} = {early_times[nodo]}$\n")
     else:
-        with open("archivo.txt", "a") as archivo:
+        with open("archivo.tex", "a",encoding="utf-8") as archivo:
             archivo.write(f"$L_{nodo} = Min \\{{")
             contador =sum(1 for arista, valor in aristas.items() if valor["tupla"][0] == nodo)
             for arista,valor in aristas.items():
@@ -143,10 +143,93 @@ for nodo in reversed(nodos):
                             
             archivo.write(f"\\}} = {last_times[nodo]}$\n")
 
-#TODO HOLGURAS
-holguras = [-1]*nNodos
+with open("archivo.tex", "a",encoding="utf-8") as archivo:
+    archivo.write("\n\n\n\n")
 
-#TODO TABLA GENERAL
+#Tabla de earlies y last times
+with open("archivo.tex", "a",encoding="utf-8") as archivo:
+    archivo.write("\\begin{table}[]\n")
+    archivo.write("\\begin{tabular}{lll}\n")
+    archivo.write("$t_i$ & $E_i$ & $L_i$ \\\\\n")
+    for nodo in nodos:
+        archivo.write(f"{nodo} & {early_times[nodo]} & {last_times[nodo]} \\\\\n")
+    archivo.write("\\end{tabular}\n")
+    archivo.write("\\end{table}\n")
 
-#TODO CAMINO CRÍTICO
+with open("archivo.tex", "a",encoding="utf-8") as archivo:
+    archivo.write("\n\n\n\n")
+#Calculo de las holguras
+holguras = {}
+for arista, valor in aristas.items():
+    if re.match(r'^F\d+', valor["actividad"]):
+        holgura = last_times[valor["tupla"][1]] - early_times[valor["tupla"][0]]
+        if holgura < 0.01:  # Comparar con 0.01
+            holgura = 0
+        holguras[valor["actividad"]] = holgura
+        with open("archivo.tex", "a",encoding="utf-8") as archivo:
+            archivo.write(f"$H_{valor['actividad']} = L_{valor['tupla'][1]} - E_{valor['tupla'][0]} = {holgura}$\n")
+    else:
+        holgura = last_times[valor["tupla"][1]] - early_times[valor["tupla"][0]] - duraciones[valor["actividad"]]
+        if holgura < 0.01:  # Comparar con 0.01
+            holgura = 0
+        holguras[valor["actividad"]] = holgura
+        with open("archivo.tex", "a",encoding="utf-8") as archivo:
+            archivo.write(f"$H_{valor['actividad']} = L_{valor['tupla'][1]} - E_{valor['tupla'][0]} - D_{valor['actividad']} = {holgura}$\n")
+
+with open("archivo.tex", "a",encoding="utf-8") as archivo:
+    archivo.write("\n\n\n\n")
+
+# Escribir la tabla en el archivo
+with open("archivo.tex", "a",encoding="utf-8") as archivo:
+    archivo.write("\\begin{table}[]\n")
+    archivo.write("\\begin{tabular}{lllllll}\n")
+    archivo.write("Tarea & Ruta   ($i \\longrightarrow j$) & $D_ij$ & $E_i$ & $L_j$ & $H_ij$  = $L_j - E_i - D_ij$ & Crítica \\\\\n")
+    
+    actividades_keys = list(actividades.keys())  # Convertir a lista para trabajar con índices
+    for idx, act in enumerate(actividades_keys):
+        archivo.write(f"{act} & ")
+        for valor in aristas.values():
+            if valor["actividad"] == act:
+                archivo.write(f"{valor['tupla'][0]} $\\longrightarrow$ {valor['tupla'][1]} & {duraciones[act]} & {early_times[valor['tupla'][0]]} & {last_times[valor['tupla'][1]]} & {holguras[act]} & ")
+                
+                # Última iteración del bucle
+                if idx == len(actividades_keys) - 1:
+                    if holguras[act] == 0:
+                        archivo.write("x\n")  # Sin "\\\\" para última iteración
+                    else:
+                        archivo.write("\n")  # Sin "\\\\" para última iteración
+                else:
+                    if holguras[act] == 0:
+                        archivo.write("x \\\\\n")
+                    else:
+                        archivo.write(" \\\\\n")
+    archivo.write("\\end{tabular}\n")
+    archivo.write("\\end{table}\n")
+
+
+
+with open("archivo.tex", "a",encoding="utf-8") as archivo:
+    archivo.write("\n\n\n\n")
+    archivo.write("Caminos críticos:\n")
+
+
+#Calcular el camino crítico
+fin=nNodos-1
+caminoCritico =""
+for  arista,valor in aristas.items():
+    if arista == 0:
+        caminoCritico+=valor["actividad"]
+        ultimo=valor["tupla"][1]
+    if holguras[valor["actividad"]] == 0:
+        if valor ["tupla"][1] == fin:
+            with  open("archivo.tex", "a",encoding="utf-8") as archivo:
+                archivo.write(f"{caminoCritico +"-"+ valor['actividad']}\n")
+        if valor["tupla"][0] == ultimo:
+            caminoCritico+="-"+valor["actividad"]
+            ultimo=valor["tupla"][1]
+
+with open ("archivo.tex", "a",encoding="utf-8") as archivo:
+    archivo.write(f"\nDuración del camino crítico: {early_times[nNodos-1]}")
+
+        
 
