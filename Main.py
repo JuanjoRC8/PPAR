@@ -1,4 +1,5 @@
 import re
+import sys
 
 import matplotlib.pyplot as plt
 import networkx as nx
@@ -7,9 +8,19 @@ import pandas as pd
 from funciones_auxiliares import (generar_aristas, letra_a_numero,
                                   numero_a_letra, redondear)
 
-# Leer el archivo Excel
-file_path = "input.xlsx"
-data = pd.read_excel(file_path, sheet_name=0)
+# Leer el archivo Excel con los datos
+file_path = input("Indica el ejercicio a realizar (Ejemplo a escribir: ej5.xlsx):  ")
+try:
+    data = pd.read_excel(file_path, sheet_name=0)
+    print("Archivo leído correctamente.")
+except FileNotFoundError:
+    print("No se encontró el archivo. Por favor, verifica el nombre y la ubicación.")
+    sys.exit()
+except Exception as e:
+    log=input("Ocurrió un error al intentar leer el archivo (y para ver el log): ")
+    if log == "y":
+        print(e)
+    sys.exit()
 
 # Crear un diccionario para almacenar las duraciones
 duraciones = {}
@@ -101,7 +112,7 @@ for nodo in nodos:
             contador =sum(1 for arista, valor in aristas.items() if valor["tupla"][1] == nodo)
             for arista,valor in aristas.items():
                 if valor["tupla"][1] == nodo:
-                    archivo.write(f"E_{nodo} + {valor["actividad"]}")
+                    archivo.write(f"E_{nodo-1} + {valor["actividad"]}")
                     contador=contador-1
                     if contador > 0:
                         archivo.write(", ")

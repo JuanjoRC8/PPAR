@@ -65,7 +65,7 @@ def generar_aristas(df):
         
         # Generar los nodos con una dependencia
         elif len(df[i]["depende_de"]) == 1:
-            it=1
+            it=0
             conseguido=False
             while (it< len(aristas) and  not conseguido):
                 if df[i]["depende_de"][0] == aristas[it]["actividad"]:
@@ -85,14 +85,14 @@ def generar_aristas(df):
                             nodoFinal.append(aristas[aux1]["tupla"][1])
             nodoFinal.sort()
             for aux2 in range(len(nodoFinal)-1):
-                aristas[nInd] = {"tupla": (nodoFinal[aux2], nodoFinal[aux2]+1), "actividad": "F"+str(actFicticias)}
+                aristas[nInd] = {"tupla": (nodoFinal[aux2], nodoFinal[aux2+1]), "actividad": "F"+str(actFicticias)}
                 nInd+=1
                 actFicticias += 1
                 # IMPORTANTE DEJO ACTIVIDADES FICTICIAS A 1 VALOR DEL QUE ESTA ESCRITO PARA QUE LA PROXIMA SE ESCRIBA BIEN
             aux3=0
             encontrado=False
             while aux3 < len(aristas) and not encontrado:
-                # IMPORTANTE RESTO 1 PORQUE EN VERDAD HE ESCRITO HASTA ACTIIDADES FICTICIAS -1
+                # IMPORTANTE RESTO 1 PORQUE EN VERDAD HE ESCRITO HASTA ACTIIDADES FICTICIAS -1 YA QUE EMPIEZO EN 0
                 if aristas[aux3]["actividad"] == "F"+str(actFicticias-1):
                     nodoAux=aristas[aux3]["tupla"][1]
                     aristas[nInd] = {"tupla": (nodoAux, n+1), "actividad": i}
@@ -101,7 +101,21 @@ def generar_aristas(df):
 
                 aux3+=1
         n += 1
+    #Comprobar que no quedan nodos sueltos
+    aristasAux = aristas.copy()
+    for valor in aristasAux.values():
+                tieneFin=False
+                for valor2 in aristasAux.values():
+                    if valor["tupla"][1] == valor2["tupla"][0]:
+                        tieneFin=True
+                if not tieneFin and valor["tupla"][1] != n:
+                    aristas[nInd] = {"tupla": (valor["tupla"][1], n), "actividad": "F"+str(actFicticias)}
+                    nInd+=1
+                    actFicticias += 1
     return aristas
 
 def redondear(valor):
+    """
+    Redondea un valor a 3 decimales.
+    """
     return round(valor, 3)
